@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
- * Description of AdminController
+ * Controller made to do CRUD on User model
  *
  * @author Damian
  */
@@ -25,15 +25,17 @@ class AdminController extends DefaultController {
 
     /**
      * @Route("/admin", name="admin")
+     * @param EntityManagerInterface $em
+     * @return Response
      */
     public function adminAction(EntityManagerInterface $em) {
         $userRepo = $em->getRepository('AppBundle:User');
         $users = $userRepo->findAll();
         $userForm = $this->createUserForm($em);
-        return $this->render('admin/users_crud.html.twig', [
+        return debug($this->render('admin/users_crud.html.twig', [
                     'users' => $users,
                     'userForm' => $userForm->createView()
-        ]);
+        ]));
     }
 
     /**
@@ -41,6 +43,7 @@ class AdminController extends DefaultController {
      * 
      * @param EntityManagerInterface $em
      * @param Request $request
+     * @return  Symfony\Component\HttpFoundation\JsonResponse
      */
     public function deleteAction(EntityManagerInterface $em, Request $request) {
         $id = $request->get('id');
@@ -65,7 +68,8 @@ class AdminController extends DefaultController {
      * 
      * @param EntityManagerInterface $em
      * @param Request $request
-     * @Route("/admin")
+     * @return  Symfony\Component\HttpFoundation\JsonResponse
+     * 
      */
     public function getAction(EntityManagerInterface $em, Request $request) {
         $id = $request->get('id');
@@ -84,6 +88,14 @@ class AdminController extends DefaultController {
             ]);
     }
 
+    /**
+     * Save User object
+     * 
+     * @param EntityManagerInterface $em
+     * @param Request $request
+     * @return  Symfony\Component\HttpFoundation\JsonResponse
+     * 
+     */
     public function saveAction(EntityManagerInterface $em, Request $request, UserPasswordEncoderInterface $passwordEncoder) {
 
         $id = (int) $request->get('id_user');
@@ -123,9 +135,15 @@ class AdminController extends DefaultController {
                 'message' => $fromRequest->getErrors(),
             ]);
     }
-
-    private
-            function createUserForm(EntityManagerInterface $em, $id = null) {
+    /**
+     * create Form for User object
+     * 
+     * @param EntityManagerInterface $em
+     * @param int $id
+     * @return  Symfony\Component\Form\Form
+     * 
+     */
+    private function createUserForm(EntityManagerInterface $em, $id = null) {
         if (empty($id)) {
             $user = new User();
         } else {
