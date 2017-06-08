@@ -2,11 +2,15 @@ app:
     resource: '@AppBundle/Controller/'
     type: annotation
 
-user_new:
+user_save:
     path:      admin/user/create
-    defaults:  { _controller: AppBundle:Admin:new }
+    defaults:  { _controller: AppBundle:Admin:save, _format:'json' }
     methods: [POST]
 user_delete:
     path:      admin/user/delete
-    defaults:  { _controller: AppBundle:Admin:delete }
+    defaults:  { _controller: AppBundle:Admin:delete, _format:'json' }
     methods: [POST]
+user_get:
+    path:      admin/user/get
+    defaults:  { _controller: AppBundle:Admin:get, _format:'json' }
+    methods: [GET]

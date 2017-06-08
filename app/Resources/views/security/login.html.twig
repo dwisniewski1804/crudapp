@@ -1,6 +1,11 @@
 {% extends 'base.html.twig'%}
 {% block body %}
     <div class="row">
+        {% for message in app.flashes('notice') %}
+            <div class="flash-notice  light-blue accent-1 ">
+                {{ message }}
+            </div>
+        {% endfor %}
         <div class="col s6">
             <div class="card">
                 <div class="card-content">
@@ -15,7 +20,6 @@
                         <i class="material-icons prefix">account_circle</i>
                         {{form_widget(loginForm.username)}}
                     </div>
-
                     <div class="input-field ">
                         <i class="material-icons prefix">vpn_key</i>
                         {{form_widget(loginForm.password)}}
@@ -30,7 +34,7 @@
     <script>
         $(document).ready(function())
         {
-             $('.tooltipped').tooltip({delay: 50});
+            $('.tooltipped').tooltip({delay: 50});
         }
     </script>
 {% endblock %}

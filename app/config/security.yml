@@ -9,11 +9,9 @@ security:
                 class:              AppBundle:User
                 property:           username
     encoders:
-        Symfony\Component\Security\Core\Encoder\BCryptPasswordEncoder:
+        AppBundle\Entity\User:
             algorithm: bcrypt
-            cost: 12            
     firewalls:
-        # disables authentication for assets and the profiler, adapt it according to your needs
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
@@ -24,8 +22,7 @@ security:
                 default_target_path: /
                 login_path: login
                 check_path: login
-                username_parameter: username
-                password_parameter: password
+                provider: my_entity_provider
             # activate different ways to authenticate
 
             # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
@@ -36,4 +33,4 @@ security:
     access_control:
         # require ROLE_ADMIN for /admin*
         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-#        - { path: ^/admin, roles: ROLE_ADMIN }        
+        - { path: ^/admin, roles: ROLE_ADMIN }        

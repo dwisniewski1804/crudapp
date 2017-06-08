@@ -4,12 +4,14 @@ namespace AppBundle\Controller;
 
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\HttpFoundation\Request;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use AppBundle\Entity\User;
+use AppBundle\Form\UserRegType;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 class SecurityController extends DefaultController {
 
@@ -28,7 +30,7 @@ class SecurityController extends DefaultController {
                     'error' => $error,
         ));
     }
-    
+
     private function createLoginForm() {
         $user = new User();
         $form = $this->createFormBuilder($user)
@@ -39,22 +41,49 @@ class SecurityController extends DefaultController {
                     'attr' => [
                         'class' => 'validate',
                         'id' => 'usernameLogin',
-                        'placeholder'=> 'Nazwa użytkownika'
+                        'placeholder' => 'Nazwa użytkownika'
                     ]
                 ])
                 ->add('password', PasswordType::class, [
                     'label' => 'Hasło',
                     'attr' => ['class' => 'validate',
                         'id' => 'usernameLogin',
-                        'placeholder'=> 'Hasło'
-                        ]
+                        'placeholder' => 'Hasło'
+                    ]
                 ])
                 ->add('login', SubmitType::class, [
                     'label' => 'Zaloguj',
-                    'attr' => ['class'=> 'waves-effect waves-light btn']
-                    ])
+                    'attr' => ['class' => 'waves-effect waves-light btn']
+                ])
                 ->getForm();
         return $form;
+    }
+
+    /**
+     * @Route("/register", name="user_registration")
+     */
+    public function registerAction(Request $request, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $em) {
+        $user = new User();
+        $form = $this->createForm(UserRegType::class, $user);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $password = $passwordEncoder->encodePassword($user, $user->getPlainPassword());
+            $user->setPassword($password);
+
+            $em->persist($user);
+            $em->flush();
+
+            $this->addFlash(
+                    'notice', 'Konto zostało utworzone, teraz możesz się zalogować!'
+            );
+            return $this->redirectToRoute('login');
+        }
+
+        return $this->render(
+                        'security/register.html.twig', array('regForm' => $form->createView())
+        );
     }
 
 }

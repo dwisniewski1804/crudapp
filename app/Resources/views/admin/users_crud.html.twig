@@ -1,14 +1,5 @@
 {% extends 'base.html.twig'%}
 {% block body %}
-    <div id="modalConfirm" class="modal modal-fixed-footer">
-        <div class="modal-content">
-            <h4>Potwierdzenie</h4>
-            <p>Czy na pewno chcesz usunąć użytkownika?</p>
-        </div>
-        <div class="modal-footer">
-            <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Potwierdzam</a>
-        </div>
-    </div>
     <table>
         <thead>
             <tr>
@@ -32,20 +23,34 @@
                         {% endif %}
                         </td>
                         <td>    
-                            <a href="#" class=""><i class="material-icons tooltipped crud-show" data-id="{{u.id}}" id="{{u.id}}_show" data-position="bottom" data-delay="50" data-tooltip="Podgląd">remove_red_eye</i></a>
                             <a href="#" class=""><i class="material-icons tooltipped crud-edit crud-edit" data-id="{{u.id}}" id="{{u.id}}_edit"data-position="bottom" data-delay="50" data-tooltip="Edycja" >mode_edit</i></a>
-                            <a href="#modalConfirm" class=""><i class="material-icons tooltipped crud-delete " data-id="{{u.id}}" id="{{u.id}}_delete"data-position="bottom" data-delay="50" data-tooltip="Usuń">delete</i></a>
+                            <a href="#" class=""><i class="material-icons tooltipped crud-delete " data-id="{{u.id}}" id="{{u.id}}_delete"data-position="bottom" data-delay="50" data-tooltip="Usuń">delete</i></a>
                         </td>
                     </tr>
                     {% endfor %}
                     </tbody> 
                 </table>
-                <a id="showForm" href="#!" class="btn-floating  scale-transition">
+
+                <a id="clearForm" href="#!" class="btn-floating  scale-transition ">
                     <i class="material-icons tooltipped" data-position="right" data-delay="50" data-tooltip="Nowy użytkownik">add</i>
                 </a>
+                <div id="loaderCustom" class="preloader-wrapper big ">
+                    <div class="spinner-layer spinner-blue">
+                        <div class="circle-clipper left">
+                            <div class="circle"></div>
+                        </div><div class="gap-patch">
+                            <div class="circle"></div>
+                        </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="card" id="userFormContainer">
                     <div class="card-content">
-                        <div class="card-title">Nowy użytkownik</div>
+                        <div id="formTittle" class="card-title">Nowy użytkownik</div>
+                        <div class="card-panel" style="display:none;">
+                            <span id="messageContainer" class="red-text text-darken-2"></span>
+                        </div>
                         {{ form_start(userForm)}}
 
                         <div class="input-field ">
@@ -58,7 +63,11 @@
                         </div>
                         <div class="input-field ">
                             <i class="material-icons prefix">vpn_key</i>
-                            {{form_widget(userForm.password)}}
+                            {{ form_widget(userForm.plainPassword.first) }}
+                        </div>
+                        <div class="input-field ">
+                            <i class="material-icons prefix">vpn_key</i>
+                            {{ form_widget(userForm.plainPassword.second) }}
                         </div>
                         <div class="input-field checkbox-container-custom">
                             <p>
@@ -67,21 +76,23 @@
                             </p>
                         </div>
                         <div class="card-action">
-
                             {{form_widget(userForm.zapisz)}}
                         </div>
                         {{ form_end(userForm) }}
                     </div>
                 </div>
-
                 <script>
                     $(document).ready(function ()
                     {
                         $('.tooltipped').tooltip({delay: 50});
+                        $('#clearForm').on('click', function ()
+                        {
+                            clearForm();
+                        });
                         $('.crud-delete').on('click', function ()
                         {
+                            loader(true);
                             var id = parseInt($(this).attr('data-id'));
-                            alert("Data deleted:");
                             $.ajax({
                                 method: "POST",
                                 url: "{{ url('user_delete')}}",
@@ -89,16 +100,104 @@
                             })
                                     .done(function (data) {
                                         if (data.status === 200) {
-                                            alert("Rekord został usunięty! ");
-                                           location.reload();
-                                        }
-                                        else 
+                                            alert(data.message);
+                                            location.reload();
+                                        } else
                                         {
-                                            alert("Rekord nie został odnaleziony! ");
+                                            alert(data.message);
                                         }
+                                    })
+                                    .fail(function ()
+                                    {
+                                        alert("Wystąpił błąd w usuwaniu");
+                                    })
+                                    .always(function (jqXHR, textStatus) {
+                                        loader(false);
+                                    });
+                        });
+                        $('.crud-edit').on('click', function ()
+                        {
+                            loader(true);
+                            var id = parseInt($(this).attr('data-id'));
+                            $.ajax({
+                                method: "GET",
+                                url: "{{ url('user_get')}}?id=" + id,
+                            })
+                                    .done(function (data) {
+                                        if (data.status === 201) {
+                                            $('#form_id_user').val(data.user.id);
+                                            $('#form_username').val(data.user.username);
+                                            $('#form_email').val(data.user.email);
+                                            $('#form_plainPassword_first').val(data.user.password);
+                                            $('#form_isActive').prop('checked', data.user.isActive);
+                                            $('#formTittle').text('Edycja użytkownika');
+                                        } else
+                                        {
+                                            alert(data.message);
+                                        }
+                                    })
+                                    .fail(function ()
+                                    {
+                                        alert("Wystąpił błąd w pobieraniu");
+                                    })
+                                    .always(function (jqXHR, textStatus) {
+                                        loader(false);
+                                    });
+                        });
+                        $('form').on('submit', function (e)
+                        {
+                            loader(true);
+                            e.preventDefault();
+                            $.ajax({
+                                method: "POST",
+                                url: "{{ url('user_save')}}",
+                                data: $(this).serialize()
+                            })
+                                    .done(function (data) {
+                                        if (data.status === 201) {
+                                            alert(data.message);
+                                            location.reload();
+                                        } else
+                                        {
+                                            $('#messageContainer').text(data.message);
+                                            $('#messageContainer').parent().slideToggle();
+
+                                        }
+                                    })
+                                    .fail(function ()
+                                    {
+                                        alert("Wystąpił błąd w dodawaniu");
+                                    })
+                                    .always(function (jqXHR, textStatus) {
+                                        loader(false);
+                                        $('#messageContainer').parent().delay(3000).slideToggle(400);
                                     });
                         });
                     });
+                    function loader(on)
+                    {
+                        if (on) {
+                            $('#loaderCustom').addClass('active');
+                        } else
+                        {
+                            $('#loaderCustom').removeClass('active');
+                        }
+                    }
+                    function clearForm()
+                    {
+                        $('#formTittle').text('Nowy użytkownik');
+                        $('input').each(function () {
+
+                            if ($(this).attr('type') === 'checkbox')
+                            {
+                                $(this).prop('checked', false);
+
+                            } else {
+                                $(this).val('');
+                            }
+                        }
+                        );
+                    }
                 </script>
                 {% endblock %}
 
