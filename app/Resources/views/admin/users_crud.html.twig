@@ -89,6 +89,7 @@
                         {
                             clearForm();
                         });
+                        // delete user by ajax
                         $('.crud-delete').on('click', function ()
                         {
                             loader(true);
@@ -115,6 +116,7 @@
                                         loader(false);
                                     });
                         });
+                        /// fill form with ajax
                         $('.crud-edit').on('click', function ()
                         {
                             loader(true);
@@ -144,6 +146,8 @@
                                         loader(false);
                                     });
                         });
+                        
+                        //// event handling form submissions and sending json data from form
                         $('form').on('submit', function (e)
                         {
                             loader(true);
@@ -161,7 +165,7 @@
                                         {
                                             $('#messageContainer').text(data.message);
                                             $('#messageContainer').parent().slideToggle();
-
+                                            
                                         }
                                     })
                                     .fail(function ()
@@ -174,6 +178,7 @@
                                     });
                         });
                     });
+                    // switch on/off loaderCustom
                     function loader(on)
                     {
                         if (on) {
@@ -183,6 +188,7 @@
                             $('#loaderCustom').removeClass('active');
                         }
                     }
+                    //clear form and uncheck checkbox
                     function clearForm()
                     {
                         $('#formTittle').text('Nowy użytkownik');
