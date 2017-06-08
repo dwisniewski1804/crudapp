@@ -1,0 +1,106 @@
+{% extends 'base.html.twig'%}
+{% block body %}
+    <div id="modalConfirm" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <h4>Potwierdzenie</h4>
+            <p>Czy na pewno chcesz usunąć użytkownika?</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Potwierdzam</a>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nazwa użytkownika</th>
+                <th>E-mail</th>
+                <th>Aktywny</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+                <tr>
+                    <td>{{u.id}}</td>
+                    <td>{{u.username}}</td>
+                    <td>{{u.email}}</td>
+                    <td>{%if u.isActive%} 
+                        <i class=" material-icons">done</i>
+                    {%else%}
+                        <i class=" material-icons">shuffle</i>
+                        {% endif %}
+                        </td>
+                        <td>    
+                            <a href="#" class=""><i class="material-icons tooltipped crud-show" data-id="{{u.id}}" id="{{u.id}}_show" data-position="bottom" data-delay="50" data-tooltip="Podgląd">remove_red_eye</i></a>
+                            <a href="#" class=""><i class="material-icons tooltipped crud-edit crud-edit" data-id="{{u.id}}" id="{{u.id}}_edit"data-position="bottom" data-delay="50" data-tooltip="Edycja" >mode_edit</i></a>
+                            <a href="#modalConfirm" class=""><i class="material-icons tooltipped crud-delete " data-id="{{u.id}}" id="{{u.id}}_delete"data-position="bottom" data-delay="50" data-tooltip="Usuń">delete</i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody> 
+                </table>
+                <a id="showForm" href="#!" class="btn-floating  scale-transition">
+                    <i class="material-icons tooltipped" data-position="right" data-delay="50" data-tooltip="Nowy użytkownik">add</i>
+                </a>
+                <div class="card" id="userFormContainer">
+                    <div class="card-content">
+                        <div class="card-title">Nowy użytkownik</div>
+                        {{ form_start(userForm)}}
+
+                        <div class="input-field ">
+                            <i class="material-icons prefix">account_circle</i>
+                            {{form_widget(userForm.username)}}
+                        </div>
+                        <div class="input-field ">
+                            <i class="material-icons prefix">email</i>
+                            {{form_widget(userForm.email)}}
+                        </div>
+                        <div class="input-field ">
+                            <i class="material-icons prefix">vpn_key</i>
+                            {{form_widget(userForm.password)}}
+                        </div>
+                        <div class="input-field checkbox-container-custom">
+                            <p>
+                                {{form_widget(userForm.isActive)}}
+                                <label for="form_isActive">Aktywny</label>
+                            </p>
+                        </div>
+                        <div class="card-action">
+
+                            {{form_widget(userForm.zapisz)}}
+                        </div>
+                        {{ form_end(userForm) }}
+                    </div>
+                </div>
+
+                <script>
+                    $(document).ready(function ()
+                    {
+                        $('.tooltipped').tooltip({delay: 50});
+                        $('.crud-delete').on('click', function ()
+                        {
+                            var id = parseInt($(this).attr('data-id'));
+                            alert("Data deleted:");
+                            $.ajax({
+                                method: "POST",
+                                url: "{{ url('user_delete')}}",
+                                data: {id: id}
+                            })
+                                    .done(function (data) {
+                                        if (data.status === 200) {
+                                            alert("Rekord został usunięty! ");
+                                           location.reload();
+                                        }
+                                        else 
+                                        {
+                                            alert("Rekord nie został odnaleziony! ");
+                                        }
+                                    });
+                        });
+                    });
+                </script>
+                {% endblock %}
+
+
+

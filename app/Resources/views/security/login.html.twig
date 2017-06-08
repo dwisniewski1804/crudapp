@@ -1,0 +1,36 @@
+{% extends 'base.html.twig'%}
+{% block body %}
+    <div class="row">
+        <div class="col s6">
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-title">Ekran logowania</div>
+                    {% if error %}
+                        <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                    {% endif %}
+
+                    {{ form_start(loginForm)}}
+
+                    <div class="input-field ">
+                        <i class="material-icons prefix">account_circle</i>
+                        {{form_widget(loginForm.username)}}
+                    </div>
+
+                    <div class="input-field ">
+                        <i class="material-icons prefix">vpn_key</i>
+                        {{form_widget(loginForm.password)}}
+                    </div>
+                    {{ form_end(loginForm) }}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function())
+        {
+             $('.tooltipped').tooltip({delay: 50});
+        }
+    </script>
+{% endblock %}

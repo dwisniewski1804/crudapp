@@ -1,3 +1,12 @@
 app:
     resource: '@AppBundle/Controller/'
     type: annotation
+
+user_new:
+    path:      admin/user/create
+    defaults:  { _controller: AppBundle:Admin:new }
+    methods: [POST]
+user_delete:
+    path:      admin/user/delete
+    defaults:  { _controller: AppBundle:Admin:delete }
+    methods: [POST]
